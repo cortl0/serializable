@@ -18,7 +18,7 @@
 namespace srlz
 {
 
-enum class property_type : uint8_t
+enum class member_type : uint8_t
 {
     INT_8,
     INT_16,
@@ -35,10 +35,11 @@ enum class property_type : uint8_t
     SRLZ
 };
 
-template<class T, property_type pt>
-struct srlz_struct
+template<class T, member_type mt>
+class member
 {
-    friend class srlz_base;
+public:
+    friend class serializable;
 
     /**
      * @brief first you need to check if the value exists by calling has_value()
@@ -83,33 +84,29 @@ struct srlz_struct
     {
         has_value_ = value;
     }
-    
-    const property_type type = pt;
 
 private:
+    const member_type type = mt;
     bool has_value_ = true;
     T value_;
 };
 
-class srlz_base
+class serializable
 {
 public:
 
-    using property_vector_type = const std::vector<void*>;
-    property_vector_type& property_vector;
+    using member_vector_type = const std::vector<void*>;
 
-    virtual ~srlz_base() = default;
-    srlz_base(property_vector_type& property_vector)
-        : property_vector(property_vector) {}
+    virtual ~serializable() = default;
 
-
-    inline static const char null_terminator = '\0';
+    serializable(member_vector_type& member_vector)
+        : member_vector(member_vector) {}
 
     bool serialize(char* buffer, const size_t size, size_t& shift)
     {
         auto write = [&buffer, &size, &shift](const void* value, size_t length) -> bool
         {
-            if((shift += length) > size)
+            if ((shift += length) > size)
                 return false;
 
             std::memcpy(buffer, value, length);
@@ -118,62 +115,62 @@ public:
             return true;
         };
 
-#define SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(T, property, property_type) \
-    auto& pro = *static_cast<srlz_struct<T, property_type>*>(property); \
-    if (!write(static_cast<const void*>(&pro.has_value_), sizeof(bool))) \
+#define SRLZ_SERIALIZE_FUNDAMENTAL_TYPE(T, memb, member_type) \
+    auto& mem = *static_cast<member<T, member_type>*>(memb); \
+    if (!write(static_cast<const void*>(&mem.has_value_), sizeof(bool))) \
         return false; \
-    if (pro.has_value_) \
+    if (mem.has_value_) \
     { \
-        if (!write(static_cast<const void*>(&pro.value_), sizeof(pro.value_))) \
+        if (!write(static_cast<const void*>(&mem.value_), sizeof(mem.value_))) \
             return false; \
     }
 
-        for (auto prop : property_vector)
+        for (auto memb : member_vector)
         {
-            switch (*static_cast<property_type*>(prop))
+            switch (*static_cast<member_type*>(memb))
             {
-            case property_type::INT_8:       { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int8_t,      prop, property_type::INT_8      ) break; }
-            case property_type::INT_16:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int16_t,     prop, property_type::INT_16     ) break; }
-            case property_type::INT_32:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int32_t,     prop, property_type::INT_32     ) break; }
-            case property_type::INT_64:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int64_t,     prop, property_type::INT_64     ) break; }
-            case property_type::U_INT_8:     { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint8_t,     prop, property_type::U_INT_8    ) break; }
-            case property_type::U_INT_16:    { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint16_t,    prop, property_type::U_INT_16   ) break; }
-            case property_type::U_INT_32:    { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint32_t,    prop, property_type::U_INT_32   ) break; }
-            case property_type::U_INT_64:    { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint64_t,    prop, property_type::U_INT_64   ) break; }
-            case property_type::FLOAT:       { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(float,       prop, property_type::FLOAT      ) break; }
-            case property_type::DOUBLE:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(double,      prop, property_type::DOUBLE     ) break; }
-            case property_type::LONG_DOUBLE: { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(long double, prop, property_type::LONG_DOUBLE) break; }
+            case member_type::INT_8:       { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( int8_t,      memb, member_type::INT_8       ) break; }
+            case member_type::INT_16:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( int16_t,     memb, member_type::INT_16      ) break; }
+            case member_type::INT_32:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( int32_t,     memb, member_type::INT_32      ) break; }
+            case member_type::INT_64:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( int64_t,     memb, member_type::INT_64      ) break; }
+            case member_type::U_INT_8:     { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( uint8_t,     memb, member_type::U_INT_8     ) break; }
+            case member_type::U_INT_16:    { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( uint16_t,    memb, member_type::U_INT_16    ) break; }
+            case member_type::U_INT_32:    { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( uint32_t,    memb, member_type::U_INT_32    ) break; }
+            case member_type::U_INT_64:    { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( uint64_t,    memb, member_type::U_INT_64    ) break; }
+            case member_type::FLOAT:       { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( float,       memb, member_type::FLOAT       ) break; }
+            case member_type::DOUBLE:      { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( double,      memb, member_type::DOUBLE      ) break; }
+            case member_type::LONG_DOUBLE: { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( long double, memb, member_type::LONG_DOUBLE ) break; }
 
-            case property_type::STD_STRING:
+            case member_type::STD_STRING:
             {
-                auto& pro = *static_cast<srlz_struct<std::string, property_type::STD_STRING>*>(prop);
+                auto& mem = *static_cast<member<std::string, member_type::STD_STRING>*>(memb);
 
-                if (!write(static_cast<const void*>(&pro.has_value_), sizeof(bool)))
+                if (!write(static_cast<const void*>(&mem.has_value_), sizeof(bool)))
                     return false;
 
-                if (pro.has_value_)
+                if (mem.has_value_)
                 {
-                    size_t length = strlen(pro.value_.data());
+                    size_t length = strlen(mem.value_.data());
 
                     if (!write(static_cast<void*>(&length), sizeof(size_t)))
                         return false;
 
-                    if (!write(static_cast<void*>(pro.value_.data()), length))
+                    if (!write(static_cast<void*>(mem.value_.data()), length))
                         return false;
                 }
 
                 break;
             }
 
-            case property_type::SRLZ:
+            case member_type::SRLZ:
             {
-                auto& pro = *static_cast<srlz_struct<srlz_base, property_type::SRLZ>*>(prop);
+                auto& mem = *static_cast<member<serializable, member_type::SRLZ>*>(memb);
 
-                if (!write(static_cast<const void*>(&pro.has_value()), sizeof(bool)))
+                if (!write(static_cast<const void*>(&mem.has_value()), sizeof(bool)))
                     return false;
 
-                if (pro.has_value_)
-                    if (!pro.value_.serialize(buffer, size, shift))
+                if (mem.has_value_)
+                    if (!mem.value_.serialize(buffer, size, shift))
                         return false;
 
                 break;
@@ -188,7 +185,6 @@ public:
 
         return true;
     }
-
     bool deserialize(char* buffer, const size_t size, size_t& shift)
     {
         auto read = [&buffer, &size, &shift](void* value, size_t length) -> bool
@@ -202,40 +198,40 @@ public:
             return true;
         };
 
-#define SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(T, property, property_type) \
-    auto& pro = *static_cast<srlz_struct<T, property_type>*>(property); \
-    if (!read(static_cast<void*>(&pro.has_value_), sizeof(bool))) \
+#define SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE(T, memb, member_type) \
+    auto& mem = *static_cast<member<T, member_type>*>(memb); \
+    if (!read(static_cast<void*>(&mem.has_value_), sizeof(bool))) \
         return false; \
-    if (pro.has_value_) \
+    if (mem.has_value_) \
     { \
-        if (!read(static_cast<void*>(&pro.value_), sizeof(pro.value_))) \
+        if (!read(static_cast<void*>(&mem.value_), sizeof(mem.value_))) \
             return false; \
     }
 
-        for (auto prop : property_vector)
+        for (auto memb : member_vector)
         {
-            switch (*static_cast<property_type*>(prop))
+            switch (*static_cast<member_type*>(memb))
             {
-            case property_type::INT_8:       { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int8_t,      prop, property_type::INT_8)       break; }
-            case property_type::INT_16:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int16_t,     prop, property_type::INT_16)      break; }
-            case property_type::INT_32:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int32_t,     prop, property_type::INT_32)      break; }
-            case property_type::INT_64:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(int64_t,     prop, property_type::INT_64)      break; }
-            case property_type::U_INT_8:     { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint8_t,     prop, property_type::U_INT_8)     break; }
-            case property_type::U_INT_16:    { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint16_t,    prop, property_type::U_INT_16)    break; }
-            case property_type::U_INT_32:    { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint32_t,    prop, property_type::U_INT_32)    break; }
-            case property_type::U_INT_64:    { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(uint64_t,    prop, property_type::U_INT_64)    break; }
-            case property_type::FLOAT:       { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(float,       prop, property_type::FLOAT)       break; }
-            case property_type::DOUBLE:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(double,      prop, property_type::DOUBLE)      break; }
-            case property_type::LONG_DOUBLE: { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE_PROPERTY(long double, prop, property_type::LONG_DOUBLE) break; }
+            case member_type::INT_8:       { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( int8_t,      memb, member_type::INT_8       ) break; }
+            case member_type::INT_16:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( int16_t,     memb, member_type::INT_16      ) break; }
+            case member_type::INT_32:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( int32_t,     memb, member_type::INT_32      ) break; }
+            case member_type::INT_64:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( int64_t,     memb, member_type::INT_64      ) break; }
+            case member_type::U_INT_8:     { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( uint8_t,     memb, member_type::U_INT_8     ) break; }
+            case member_type::U_INT_16:    { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( uint16_t,    memb, member_type::U_INT_16    ) break; }
+            case member_type::U_INT_32:    { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( uint32_t,    memb, member_type::U_INT_32    ) break; }
+            case member_type::U_INT_64:    { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( uint64_t,    memb, member_type::U_INT_64    ) break; }
+            case member_type::FLOAT:       { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( float,       memb, member_type::FLOAT       ) break; }
+            case member_type::DOUBLE:      { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( double,      memb, member_type::DOUBLE      ) break; }
+            case member_type::LONG_DOUBLE: { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( long double, memb, member_type::LONG_DOUBLE ) break; }
 
-            case property_type::STD_STRING:
+            case member_type::STD_STRING:
             {
-                auto& pro = *static_cast<srlz_struct<std::string, property_type::STD_STRING>*>(prop);
+                auto& mem = *static_cast<member<std::string, member_type::STD_STRING>*>(memb);
 
-                if (!read(static_cast<void*>(&pro.has_value_), sizeof(bool)))
+                if (!read(static_cast<void*>(&mem.has_value_), sizeof(bool)))
                     return false;
 
-                if (pro.has_value_)
+                if (mem.has_value_)
                 {
                     size_t length;
                     
@@ -249,21 +245,21 @@ public:
 
                     chars[length] = '\0';
 
-                    pro.value_ = std::string(chars);
+                    mem.value_ = std::string(chars);
                 }
 
                 break;
             }
 
-            case property_type::SRLZ:
+            case member_type::SRLZ:
             {
-                auto& pro = *static_cast<srlz_struct<srlz_base, property_type::SRLZ>*>(prop);
+                auto& mem = *static_cast<member<serializable, member_type::SRLZ>*>(memb);
 
-                if (!read(static_cast<void*>(&pro.has_value_), sizeof(bool)))
+                if (!read(static_cast<void*>(&mem.has_value_), sizeof(bool)))
                     return false;
 
-                if (pro.has_value_)
-                    if (!pro.value_.deserialize(buffer, size, shift))
+                if (mem.has_value_)
+                    if (!mem.value_.deserialize(buffer, size, shift))
                         return false;
 
                 break;
@@ -278,6 +274,10 @@ public:
 
         return true;
     }
+
+private:
+    member_vector_type& member_vector;
+    inline static const char null_terminator = '\0';
 };
 
 } // namespace srlz
