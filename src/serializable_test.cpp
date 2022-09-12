@@ -8,13 +8,11 @@
  * @copyright Copyright (c) 2022
  */
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 #include "serializable.hpp"
 
 using namespace srlz;
-
-constexpr int8_t test_int8_t_value = int8_t(15);
 
 void debug_helper(char* buffer, size_t length);
 void has_value_test();
@@ -32,7 +30,7 @@ int main(int argc, char* argv[])
     all_fundamental_types_test();
     std_string_type_test();
     nested_entity_test();
-    
+
     return 0;
 }
 
@@ -128,6 +126,7 @@ void has_value_test()
     }
 
     {
+        constexpr int8_t test_int8_t_value = int8_t(15);
         entity obj;
         obj.i8.set_has_value(false);
         obj.i8.set(test_int8_t_value);
@@ -153,6 +152,7 @@ void simple_serialize_deserialize_test()
         };
     };
 
+    constexpr int8_t test_int8_t_value = int8_t(15);
     constexpr size_t length = 16;
     char buffer[length];
     size_t serialize_shift = 0;
@@ -165,10 +165,10 @@ void simple_serialize_deserialize_test()
     assert(first.serialize(buffer, length, serialize_shift));
     assert(second.deserialize(buffer, length, deserialize_shift));
     constexpr size_t expected_size = sizeof(bool) + sizeof(int8_t);
-    assert(serialize_shift == expected_size);
-    assert(serialize_shift == deserialize_shift);
-    assert(first.i8.get() == test_int8_t_value);
-    assert(second.i8.get() == test_int8_t_value);
+    assert(expected_size == serialize_shift);
+    assert(expected_size == deserialize_shift);
+    assert(test_int8_t_value == first.i8.get());
+    assert(test_int8_t_value == second.i8.get());
 
     //debug_helper(buffer, serialize_shift);
 }
@@ -291,8 +291,8 @@ void all_fundamental_types_test()
         sizeof(double)       +
         sizeof(long double);
 
-    assert(serialize_shift == expected_size);
-    assert(serialize_shift == deserialize_shift);
+    assert(expected_size == serialize_shift);
+    assert(expected_size == deserialize_shift);
     assert(first.i8   .get() == second.i8   .get());
     assert(first.i16  .get() == second.i16  .get());
     assert(first.i32  .get() == second.i32  .get());
@@ -337,8 +337,8 @@ void std_string_type_test()
     assert(first.serialize(buffer, length, serialize_shift));
     assert(second.deserialize(buffer, length, deserialize_shift));
     const size_t expected_size = sizeof(bool) + sizeof(size_t) + test_str_value.length();
-    assert(serialize_shift == expected_size);
-    assert(serialize_shift == deserialize_shift);
+    assert(expected_size == serialize_shift);
+    assert(expected_size == deserialize_shift);
     assert(first.str.get() == test_str_value);
     assert(first.str.get() == second.str.get());
 
@@ -375,6 +375,7 @@ void nested_entity_test()
         };
     };
 
+    constexpr int8_t test_int8_t_value = int8_t(15);
     constexpr size_t length = 1024;
     char buffer[length];
     size_t serialize_shift = 0;
@@ -388,9 +389,10 @@ void nested_entity_test()
     assert(first.serialize(buffer, length, serialize_shift));
     assert(second.deserialize(buffer, length, deserialize_shift));
     const size_t expected_size = sizeof(bool) + sizeof(bool) + sizeof(int8_t);
-    assert(serialize_shift == expected_size);
-    assert(serialize_shift == deserialize_shift);
-    assert(first.nested.get().i8.get() == second.nested.get().i8.get());
+    assert(expected_size == serialize_shift);
+    assert(expected_size == deserialize_shift);
+    assert(test_int8_t_value == first.nested.get().i8.get());
+    assert(test_int8_t_value == second.nested.get().i8.get());
 
     //debug_helper(buffer, serialize_shift);
 }
