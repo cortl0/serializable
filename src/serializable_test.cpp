@@ -1,7 +1,7 @@
 /**
  * @file serializable_test.cpp
  * @author Ilya Shishkin (cortl@yandex.ru)
- * @brief project serializable unit tests
+ * @brief project serializable
  * @version 0.1
  * @date 2022-09-11
  * @license GPL v3.0
@@ -19,6 +19,7 @@ void has_value_test();
 void simple_serialize_deserialize_test();
 void selective_serialization_test();
 void all_fundamental_types_test();
+void memory_test();
 void std_string_type_test();
 void nested_entity_test();
 
@@ -28,6 +29,7 @@ int main(int argc, char* argv[])
     simple_serialize_deserialize_test();
     selective_serialization_test();
     all_fundamental_types_test();
+    memory_test();
     std_string_type_test();
     nested_entity_test();
 
@@ -231,6 +233,7 @@ void all_fundamental_types_test()
         virtual ~entity() = default;
         entity() : serializable(member_vector) {}
 
+        member< int8_t     , member_type::BOOL        > b   ;
         member< int8_t     , member_type::INT_8       > i8   ;
         member< int16_t    , member_type::INT_16      > i16  ;
         member< int32_t    , member_type::INT_32      > i32  ;
@@ -245,6 +248,7 @@ void all_fundamental_types_test()
 
         serializable::member_vector_type member_vector =
         {
+            static_cast< void* >( &b   ),
             static_cast< void* >( &i8   ),
             static_cast< void* >( &i16  ),
             static_cast< void* >( &i32  ),
@@ -266,6 +270,7 @@ void all_fundamental_types_test()
     entity first;
     entity second;
 
+    first.b    .set( true        );
     first.i8   .set( int8_t(1)   );
     first.i16  .set( int16_t(2)  );
     first.i32  .set( 3L          );
@@ -282,7 +287,8 @@ void all_fundamental_types_test()
     assert(second.deserialize(buffer, length, deserialize_shift));
 
     constexpr size_t expected_size = 
-        sizeof(bool)    * 11 +
+        sizeof(bool)    * 12 +
+        sizeof(bool)         +
         sizeof(int8_t)  *  2 +
         sizeof(int16_t) *  2 +
         sizeof(int32_t) *  2 +
@@ -293,6 +299,7 @@ void all_fundamental_types_test()
 
     assert(expected_size == serialize_shift);
     assert(expected_size == deserialize_shift);
+    assert(first.b    .get() == second.b    .get());
     assert(first.i8   .get() == second.i8   .get());
     assert(first.i16  .get() == second.i16  .get());
     assert(first.i32  .get() == second.i32  .get());
@@ -304,6 +311,54 @@ void all_fundamental_types_test()
     assert(first.f    .get() == second.f    .get());
     assert(first.d    .get() == second.d    .get());
     assert(first.ld   .get() == second.ld   .get());
+
+    //debug_helper(buffer, serialize_shift);
+}
+
+void memory_test()
+{
+    constexpr size_t size = size_t(512);
+
+    class entity final : public serializable
+    {
+    public:
+        virtual ~entity()
+        {
+            delete [] m.get_unsafe().pointer;
+        }
+
+        entity() : serializable(member_vector)
+        {
+            m.get_unsafe().size = size;
+            m.get_unsafe().pointer = new unsigned char[size];
+        }
+
+        member<memory, member_type::MEMORY> m;
+
+        serializable::member_vector_type member_vector =
+        {
+            static_cast<void*>(&m)
+        };
+    };
+
+    constexpr size_t length = 1024;
+    char buffer[length];
+    size_t serialize_shift = 0;
+    size_t deserialize_shift = 0;
+    entity first;
+    entity second;
+
+    for (size_t i = 0; i < size; ++i)
+        first.m.get_unsafe().pointer[i] = i % size_t(first.m.get_unsafe().pointer);
+
+    assert(first.serialize(buffer, length, serialize_shift));
+    assert(second.deserialize(buffer, length, deserialize_shift));
+    size_t expected_size = sizeof(bool) + size;
+    assert(expected_size == serialize_shift);
+    assert(expected_size == deserialize_shift);
+
+    for (size_t i = 0; i < size; ++i)
+        assert(first.m.get().pointer[i] == first.m.get().pointer[i]);
 
     //debug_helper(buffer, serialize_shift);
 }
