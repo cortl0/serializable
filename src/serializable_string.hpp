@@ -32,17 +32,17 @@ public:
     virtual bool serialize(
         char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const override
     {
         auto& mem = *static_cast<member<std::string, member_type::STD_STRING>*>(member_);
 
         const size_t length = mem.value_.length();
 
-        if (!write(static_cast<const void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_shift))
+        if (!write(static_cast<const void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
             return false;
 
-        if (!write(static_cast<const void* const>(mem.value_.c_str()), length, buffer, buffer_size, buffer_shift))
+        if (!write(static_cast<const void* const>(mem.value_.c_str()), length, buffer, buffer_size, buffer_offset))
             return false;
 
         return true;
@@ -51,19 +51,19 @@ public:
     virtual bool deserialize(
         const char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const override
     {
         auto& mem = *static_cast<member<std::string, member_type::STD_STRING>*>(member_);
 
         size_t length;
             
-        if (!read(static_cast<void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_shift))
+        if (!read(static_cast<void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
             return false;
 
         mem.value_.resize(length);
 
-        if (!read(static_cast<void* const>(mem.value_.data()), length, buffer, buffer_size, buffer_shift))
+        if (!read(static_cast<void* const>(mem.value_.data()), length, buffer, buffer_size, buffer_offset))
             return false;
 
         return true;

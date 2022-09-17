@@ -24,13 +24,13 @@ public:
     virtual bool serialize(
         char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const = 0;
 
     virtual bool deserialize(
         const char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const = 0;
 
 protected:
@@ -39,14 +39,14 @@ protected:
         const size_t value_length,
         char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const
     {
-        if (buffer_shift + value_length > buffer_size)
+        if (buffer_offset + value_length > buffer_size)
             return false;
 
-        std::memcpy(buffer + buffer_shift, value, value_length);
-        buffer_shift += value_length;
+        std::memcpy(buffer + buffer_offset, value, value_length);
+        buffer_offset += value_length;
 
         return true;
     };
@@ -56,14 +56,14 @@ protected:
         const size_t value_length,
         const char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const
     {
-        if (buffer_shift + value_length > buffer_size)
+        if (buffer_offset + value_length > buffer_size)
             return false;
 
-        std::memcpy(value, buffer + buffer_shift, value_length);
-        buffer_shift += value_length;
+        std::memcpy(value, buffer + buffer_offset, value_length);
+        buffer_offset += value_length;
 
         return true;
     };

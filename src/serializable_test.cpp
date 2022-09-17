@@ -10,6 +10,8 @@
 
 #include <cassert>
 #include <iostream>
+#include <vector>
+
 #include "serializable.hpp"
 
 using namespace srlz;
@@ -22,6 +24,7 @@ void all_fundamental_types_test();
 void memory_test();
 void std_string_type_test();
 void nested_entity_test();
+void custom_entity_test();
 
 int main(int argc, char* argv[])
 {
@@ -32,6 +35,7 @@ int main(int argc, char* argv[])
     memory_test();
     std_string_type_test();
     nested_entity_test();
+    custom_entity_test();
 
     return 0;
 }
@@ -448,6 +452,91 @@ void nested_entity_test()
     assert(expected_size == deserialize_shift);
     assert(test_int8_t_value == first.nested.get().i8.get());
     assert(test_int8_t_value == second.nested.get().i8.get());
+
+    //debug_helper(buffer, serialize_shift);
+}
+
+void custom_entity_test()
+{
+    constexpr size_t size = size_t(512);
+
+    class entity final : public serializable
+    {
+    public:
+        virtual ~entity()
+        {
+            delete custom_vector;
+        }
+
+        entity() : serializable(member_vector) {}
+
+        serializable::member_vector_type member_vector;
+
+        std::vector<uint8_t>* custom_vector { new std::vector<uint8_t>() };
+
+        virtual bool serialize(
+            char* const buffer,
+            const size_t buffer_size,
+            size_t& buffer_offset
+            ) const override
+        {
+            size_t length = custom_vector->size();
+
+            if (!write(static_cast<const void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
+                return false;
+
+            for (auto& item : *custom_vector)
+                if (!write(static_cast<const void* const>(&item), sizeof(item), buffer, buffer_size, buffer_offset))
+                    return false;
+
+            return serializable::serialize(buffer, buffer_size, buffer_offset);
+        }
+
+        virtual bool deserialize(
+            const char* const buffer,
+            const size_t buffer_size,
+            size_t& buffer_offset
+            ) const override
+        {
+            custom_vector->clear();
+
+            size_t length;
+
+            if (!read(static_cast<void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
+                return false;
+
+            for (size_t i = 0; i < length; ++i)
+            {
+                uint8_t value;
+
+                if (!read(static_cast<void* const>(&value), sizeof(value), buffer, buffer_size, buffer_offset))
+                    return false;
+
+                custom_vector->push_back(value);
+            }
+
+            return serializable::deserialize(buffer, buffer_size, buffer_offset);
+        }
+
+    };
+
+    constexpr int8_t test_int8_t_value = int8_t(15);
+    constexpr size_t length = 1024;
+    char buffer[length];
+    size_t serialize_shift = 0;
+    size_t deserialize_shift = 0;
+    entity first;
+    entity second;
+    first.custom_vector->push_back(test_int8_t_value);
+    first.custom_vector->push_back(test_int8_t_value + 5);
+
+    assert(first.serialize(buffer, length, serialize_shift));
+    assert(second.deserialize(buffer, length, deserialize_shift));
+    size_t expected_size = sizeof(size_t) + sizeof(int8_t) * 2;
+    assert(expected_size == serialize_shift);
+    assert(expected_size == deserialize_shift);
+    assert((*second.custom_vector)[0] == test_int8_t_value);
+    assert((*second.custom_vector)[1] == test_int8_t_value + 5);
 
     //debug_helper(buffer, serialize_shift);
 }
