@@ -56,7 +56,7 @@ public:
             if (!common.has_value_)
                 continue;
 
-            switch (*static_cast<member_type*>(memb))
+            switch (common.get_type())
             {
             case member_type::BOOL        : { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( bool        , member_type::BOOL        ) break; }
             case member_type::INT_8       : { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( int8_t      , member_type::INT_8       ) break; }
@@ -134,7 +134,7 @@ public:
             if (!common.has_value_)
                 continue;
 
-            switch (*static_cast<member_type*>(memb))
+            switch (common.get_type())
             {
             case member_type::BOOL        : { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( bool        , member_type::BOOL        ) break; }
             case member_type::INT_8       : { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( int8_t      , member_type::INT_8       ) break; }

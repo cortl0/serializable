@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vector>
 
+#include <memory>
 #include "serializable.hpp"
 
 using namespace srlz;
@@ -25,6 +26,7 @@ void memory_test();
 void std_string_type_test();
 void nested_entity_test();
 void custom_entity_test();
+void nested_custom_entity_test();
 
 int main(int argc, char* argv[])
 {
@@ -36,6 +38,7 @@ int main(int argc, char* argv[])
     std_string_type_test();
     nested_entity_test();
     custom_entity_test();
+    nested_custom_entity_test();
 
     return 0;
 }
@@ -161,22 +164,22 @@ void simple_serialize_deserialize_test()
     constexpr int8_t test_int8_t_value = int8_t(15);
     constexpr size_t length = 16;
     char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
     entity first;
     entity second;
 
     first.i8.set(test_int8_t_value);
 
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
     constexpr size_t expected_size = sizeof(bool) + sizeof(int8_t);
-    assert(expected_size == serialize_shift);
-    assert(expected_size == deserialize_shift);
+    assert(expected_size == serialize_offset);
+    assert(expected_size == deserialize_offset);
     assert(test_int8_t_value == first.i8.get());
     assert(test_int8_t_value == second.i8.get());
 
-    //debug_helper(buffer, serialize_shift);
+    //debug_helper(buffer, serialize_offset);
 }
 
 void selective_serialization_test()
@@ -203,8 +206,8 @@ void selective_serialization_test()
 
     constexpr size_t length = 128;
     char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
     entity first;
     entity second;
 
@@ -216,17 +219,17 @@ void selective_serialization_test()
     first.i8.set_has_value(false);
     first.i32.set_has_value(false);
 
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
     constexpr size_t expected_size = sizeof(bool) * 4 + sizeof(int16_t) + sizeof(int64_t);
-    assert(serialize_shift == expected_size);
-    assert(serialize_shift == deserialize_shift);
+    assert(serialize_offset == expected_size);
+    assert(serialize_offset == deserialize_offset);
     assert(!second.i8.has_value());
     assert(!second.i32.has_value());
     assert(first.i16.get() == second.i16.get());
     assert(first.i64.get() == second.i64.get());
 
-    //debug_helper(buffer, serialize_shift);
+    //debug_helper(buffer, serialize_offset);
 }
 
 void all_fundamental_types_test()
@@ -269,8 +272,8 @@ void all_fundamental_types_test()
 
     constexpr size_t length = 128;
     char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
     entity first;
     entity second;
 
@@ -287,8 +290,8 @@ void all_fundamental_types_test()
     first.d    .set( 10.0        );
     first.ld   .set( 11.0DL      );
 
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
 
     constexpr size_t expected_size = 
         sizeof(bool)    * 12 +
@@ -301,8 +304,8 @@ void all_fundamental_types_test()
         sizeof(double)       +
         sizeof(long double);
 
-    assert(expected_size == serialize_shift);
-    assert(expected_size == deserialize_shift);
+    assert(expected_size == serialize_offset);
+    assert(expected_size == deserialize_offset);
     assert(first.b    .get() == second.b    .get());
     assert(first.i8   .get() == second.i8   .get());
     assert(first.i16  .get() == second.i16  .get());
@@ -316,7 +319,7 @@ void all_fundamental_types_test()
     assert(first.d    .get() == second.d    .get());
     assert(first.ld   .get() == second.ld   .get());
 
-    //debug_helper(buffer, serialize_shift);
+    //debug_helper(buffer, serialize_offset);
 }
 
 void memory_test()
@@ -347,24 +350,24 @@ void memory_test()
 
     constexpr size_t length = 1024;
     char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
     entity first;
     entity second;
 
     for (size_t i = 0; i < size; ++i)
         first.m.get_unsafe().pointer[i] = i % size_t(first.m.get_unsafe().pointer);
 
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
     size_t expected_size = sizeof(bool) + size;
-    assert(expected_size == serialize_shift);
-    assert(expected_size == deserialize_shift);
+    assert(expected_size == serialize_offset);
+    assert(expected_size == deserialize_offset);
 
     for (size_t i = 0; i < size; ++i)
         assert(first.m.get().pointer[i] == first.m.get().pointer[i]);
 
-    //debug_helper(buffer, serialize_shift);
+    //debug_helper(buffer, serialize_offset);
 }
 
 void std_string_type_test()
@@ -385,23 +388,23 @@ void std_string_type_test()
 
     constexpr size_t length = 128;
     char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
     entity first;
     entity second;
     const std::string test_str_value = "text";
 
     first.str.set(test_str_value);
 
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
     const size_t expected_size = sizeof(bool) + sizeof(size_t) + test_str_value.length();
-    assert(expected_size == serialize_shift);
-    assert(expected_size == deserialize_shift);
+    assert(expected_size == serialize_offset);
+    assert(expected_size == deserialize_offset);
     assert(first.str.get() == test_str_value);
     assert(first.str.get() == second.str.get());
 
-    //debug_helper(buffer, serialize_shift);
+    //debug_helper(buffer, serialize_offset);
 }
 
 void nested_entity_test()
@@ -437,23 +440,23 @@ void nested_entity_test()
     constexpr int8_t test_int8_t_value = int8_t(15);
     constexpr size_t length = 1024;
     char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
     entity first;
     entity second;
 
     first.nested.get_unsafe().i8.set(test_int8_t_value);
 
     assert(first.nested.get().i8.get() == test_int8_t_value);
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
     const size_t expected_size = sizeof(bool) + sizeof(bool) + sizeof(int8_t);
-    assert(expected_size == serialize_shift);
-    assert(expected_size == deserialize_shift);
+    assert(expected_size == serialize_offset);
+    assert(expected_size == deserialize_offset);
     assert(test_int8_t_value == first.nested.get().i8.get());
     assert(test_int8_t_value == second.nested.get().i8.get());
 
-    //debug_helper(buffer, serialize_shift);
+    //debug_helper(buffer, serialize_offset);
 }
 
 void custom_entity_test()
@@ -465,14 +468,13 @@ void custom_entity_test()
     public:
         virtual ~entity()
         {
-            delete custom_vector;
         }
 
         entity() : serializable(member_vector) {}
 
         serializable::member_vector_type member_vector;
 
-        std::vector<uint8_t>* custom_vector { new std::vector<uint8_t>() };
+        std::unique_ptr<std::vector<uint8_t>> custom_vector { new std::vector<uint8_t>() };
 
         virtual bool serialize(
             char* const buffer,
@@ -523,20 +525,146 @@ void custom_entity_test()
     constexpr int8_t test_int8_t_value = int8_t(15);
     constexpr size_t length = 1024;
     char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
     entity first;
     entity second;
     first.custom_vector->push_back(test_int8_t_value);
     first.custom_vector->push_back(test_int8_t_value + 5);
 
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
     size_t expected_size = sizeof(size_t) + sizeof(int8_t) * 2;
-    assert(expected_size == serialize_shift);
-    assert(expected_size == deserialize_shift);
+    assert(expected_size == serialize_offset);
+    assert(expected_size == deserialize_offset);
     assert((*second.custom_vector)[0] == test_int8_t_value);
     assert((*second.custom_vector)[1] == test_int8_t_value + 5);
 
-    //debug_helper(buffer, serialize_shift);
+    //debug_helper(buffer, serialize_offset);
+}
+
+void nested_custom_entity_test()
+{
+    constexpr size_t size = size_t(512);
+
+    class nested_entity final : public serializable
+    {
+    public:
+        virtual ~nested_entity()
+        {
+        }
+
+        nested_entity() : serializable(member_vector) {}
+
+        serializable::member_vector_type member_vector;
+
+        std::unique_ptr<std::vector<uint8_t>> custom_vector { new std::vector<uint8_t>() };
+
+        virtual bool serialize(
+            char* const buffer,
+            const size_t buffer_size,
+            size_t& buffer_offset
+            ) const override
+        {
+            size_t length = custom_vector->size();
+
+            if (!write(static_cast<const void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
+                return false;
+
+            for (auto& item : *custom_vector)
+                if (!write(static_cast<const void* const>(&item), sizeof(item), buffer, buffer_size, buffer_offset))
+                    return false;
+
+            return true;
+        }
+
+        virtual bool deserialize(
+            const char* const buffer,
+            const size_t buffer_size,
+            size_t& buffer_offset
+            ) const override
+        {
+            custom_vector->clear();
+
+            size_t length;
+
+            if (!read(static_cast<void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
+                return false;
+
+            for (size_t i = 0; i < length; ++i)
+            {
+                uint8_t value;
+
+                if (!read(static_cast<void* const>(&value), sizeof(value), buffer, buffer_size, buffer_offset))
+                    return false;
+
+                custom_vector->push_back(value);
+            }
+
+            return true;
+        }
+    };
+
+    class entity final : public serializable
+    {
+    public:
+        virtual ~entity() = default;
+        entity() : serializable(member_vector) {}
+
+        member<nested_entity, member_type::SRLZ> nested;
+
+        serializable::member_vector_type member_vector =
+        {
+            static_cast<void*>(&nested)
+        };
+
+        virtual bool serialize(
+            char* const buffer,
+            const size_t buffer_size,
+            size_t& buffer_offset
+            ) const override
+        {
+            if (!serializable::serialize(buffer, buffer_size, buffer_offset))
+                return false;
+
+            if (!nested.get().serialize(buffer, buffer_size, buffer_offset))
+                return false;
+
+            return true;
+        }
+
+        virtual bool deserialize(
+            const char* const buffer,
+            const size_t buffer_size,
+            size_t& buffer_offset
+            ) const override
+        {
+            if (!serializable::deserialize(buffer, buffer_size, buffer_offset))
+                return false;
+
+            if (!nested.get().deserialize(buffer, buffer_size, buffer_offset))
+                return false;
+
+            return true;
+        }
+    };
+
+    constexpr int8_t test_int8_t_value = int8_t(15);
+    constexpr size_t length = 1024;
+    char buffer[length];
+    size_t serialize_offset = 0;
+    size_t deserialize_offset = 0;
+    entity first;
+    entity second;
+    first.nested.get_unsafe().custom_vector->push_back(test_int8_t_value);
+    first.nested.get_unsafe().custom_vector->push_back(test_int8_t_value + 5);
+    assert(first.serialize(buffer, length, serialize_offset));
+    assert(second.deserialize(buffer, length, deserialize_offset));
+    size_t expected_size = sizeof(bool) + sizeof(size_t) + sizeof(int8_t) * 2;
+    assert(expected_size == serialize_offset);
+    assert(expected_size == deserialize_offset);
+    assert((*second.nested.get().custom_vector)[0] == test_int8_t_value);
+    assert((*second.nested.get().custom_vector)[1] == test_int8_t_value + 5);
+
+    //debug_helper(buffer, serialize_offset);
 }

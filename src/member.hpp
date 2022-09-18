@@ -67,7 +67,7 @@ public:
         has_value_ = value;
     }
 
-    const member_type& get_type() const
+    const member_type& get_type() const noexcept
     {
         return type_;
     }
