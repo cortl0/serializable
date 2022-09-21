@@ -31,7 +31,7 @@ public:
         if (!has_value_)
             throw -1;
 
-        return value_;
+        return *value_.get();
     }
 
     /**
@@ -42,7 +42,7 @@ public:
         if (!has_value_)
             throw -1;
 
-        return value_;
+        return *value_.get();
     }
 
     void set(T& value) noexcept
@@ -54,7 +54,7 @@ public:
     void set(const T& value) noexcept
     {
         has_value_ = true;
-        value_ = value;
+        *value_.get() = value;
     }
 
     const bool& has_value() const noexcept
@@ -75,7 +75,7 @@ public:
 private:
     const member_type type_ = mt;
     bool has_value_ = true;
-    T value_;
+    std::unique_ptr<T> value_ { new T };
 };
 
 } // namespace srlz

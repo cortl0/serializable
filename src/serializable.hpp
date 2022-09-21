@@ -42,7 +42,7 @@ public:
 
 #define SRLZ_SERIALIZE_FUNDAMENTAL_TYPE(T, member_type) \
     auto& mem = *static_cast<const member<T, member_type>*>(memb); \
-    if (!write(static_cast<const void* const>(&mem.value_), sizeof(mem.value_), buffer, buffer_size, buffer_offset)) \
+    if (!write(static_cast<const void* const>(mem.value_.get()), sizeof(*mem.value_.get()), buffer, buffer_size, buffer_offset)) \
         return false;
 // SRLZ_SERIALIZE_FUNDAMENTAL_TYPE
 
@@ -75,7 +75,7 @@ public:
             {
                 auto& mem = *static_cast<member<memory, member_type::MEMORY>*>(memb);
 
-                if (!write(static_cast<const void* const>(mem.value_.pointer), mem.value_.size, buffer, buffer_size, buffer_offset))
+                if (!write(static_cast<const void* const>(mem.value_->pointer), mem.value_->size, buffer, buffer_size, buffer_offset))
                     return false;
 
                 break;
@@ -96,7 +96,7 @@ public:
             {
                 auto& mem = *static_cast<member<serializable, member_type::SRLZ>*>(memb);
 
-                if (!mem.value_.serialize(buffer, buffer_size, buffer_offset))
+                if (!mem.value_->serialize(buffer, buffer_size, buffer_offset))
                     return false;
 
                 break;
@@ -121,7 +121,7 @@ public:
 
 #define SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE(T, member_type) \
     auto& mem = *static_cast<member<T, member_type>*>(memb); \
-    if (!read(static_cast<void* const>(&mem.value_), sizeof(mem.value_), buffer, buffer_size, buffer_offset)) \
+    if (!read(static_cast<void* const>(mem.value_.get()), sizeof(*mem.value_.get()), buffer, buffer_size, buffer_offset)) \
         return false;
 // SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE
 
@@ -153,7 +153,7 @@ public:
             {
                 auto& mem = *static_cast<member<memory, member_type::MEMORY>*>(memb);
 
-                if (!read(static_cast<void* const>(mem.value_.pointer), mem.value_.size, buffer, buffer_size, buffer_offset))
+                if (!read(static_cast<void* const>(mem.value_->pointer), mem.value_->size, buffer, buffer_size, buffer_offset))
                     return false;
 
                 break;
@@ -174,7 +174,7 @@ public:
             {
                 auto& mem = *static_cast<member<serializable, member_type::SRLZ>*>(memb);
 
-                if (!mem.value_.deserialize(buffer, buffer_size, buffer_offset))
+                if (!mem.value_->deserialize(buffer, buffer_size, buffer_offset))
                     return false;
 
                 break;
