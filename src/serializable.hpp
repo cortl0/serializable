@@ -18,7 +18,6 @@
 #include "member.hpp"
 #include "memory.h"
 #include "serializable_base.hpp"
-#include "serializable_string.hpp"
 
 namespace srlz
 {
@@ -76,17 +75,6 @@ public:
                 auto& mem = *static_cast<member<memory, member_type::MEMORY>*>(memb);
 
                 if (!write(static_cast<const void* const>(mem.value_->pointer), mem.value_->size, buffer, buffer_size, buffer_offset))
-                    return false;
-
-                break;
-            }
-
-            case member_type::STD_STRING:
-            {
-                serializable_string s;
-                s.set_member(memb);
-
-                if (!s.serialize(buffer, buffer_size, buffer_offset))
                     return false;
 
                 break;
@@ -154,17 +142,6 @@ public:
                 auto& mem = *static_cast<member<memory, member_type::MEMORY>*>(memb);
 
                 if (!read(static_cast<void* const>(mem.value_->pointer), mem.value_->size, buffer, buffer_size, buffer_offset))
-                    return false;
-
-                break;
-            }
-
-            case member_type::STD_STRING:
-            {
-                serializable_string s;
-                s.set_member(memb);
-
-                if (!s.deserialize(buffer, buffer_size, buffer_offset))
                     return false;
 
                 break;

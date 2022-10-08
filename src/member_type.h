@@ -34,8 +34,7 @@ enum class member_type : uint8_t
     LONG_DOUBLE,
     
     MEMORY,
-    STD_STRING,
-    SRLZ
+    SRLZ,
 };
 
 } // namespace srlz

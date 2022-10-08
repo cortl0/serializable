@@ -16,11 +16,12 @@
 namespace srlz
 {
 
+class serializable;
+
 template<class T, member_type mt>
 class member
 {
 public:
-    friend class serializable_string;
     friend class serializable;
 
     /**
@@ -43,12 +44,6 @@ public:
             throw -1;
 
         return *value_.get();
-    }
-
-    void set(T& value) noexcept
-    {
-        has_value_ = true;
-        value_ = value;
     }
 
     void set(const T& value) noexcept

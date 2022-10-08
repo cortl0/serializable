@@ -22,11 +22,11 @@ namespace srlz
 class serializable_string : public serializable_base, public std::string
 {
 public:
-    //virtual ~serializable_string() = default;
+    virtual ~serializable_string() = default;
 
-    void set_member(void* member)
+    void set(std::string value)
     {
-        member_ = member;
+        *((std::string*)this) = value;
     }
 
     virtual bool serialize(
@@ -35,14 +35,12 @@ public:
         size_t& buffer_offset
         ) const override
     {
-        auto& mem = *static_cast<member<std::string, member_type::STD_STRING>*>(member_);
-
-        const size_t length = mem.value_->length();
+        const size_t length = this->length();
 
         if (!write(static_cast<const void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
             return false;
 
-        if (!write(static_cast<const void* const>(mem.value_->c_str()), length, buffer, buffer_size, buffer_offset))
+        if (!write(static_cast<const void* const>(c_str()), length, buffer, buffer_size, buffer_offset))
             return false;
 
         return true;
@@ -54,23 +52,18 @@ public:
         size_t& buffer_offset
         ) const override
     {
-        auto& mem = *static_cast<member<std::string, member_type::STD_STRING>*>(member_);
-
         size_t length;
             
         if (!read(static_cast<void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
             return false;
 
-        mem.value_->resize(length);
+        ((std::string*)this)->resize(length);
 
-        if (!read(static_cast<void* const>(mem.value_->data()), length, buffer, buffer_size, buffer_offset))
+        if (!read(static_cast<void* const>(((std::string*)this)->data()), length, buffer, buffer_size, buffer_offset))
             return false;
 
         return true;
     }
-
-private:
-    void* member_;
 };
 
 } // namespace srlz
