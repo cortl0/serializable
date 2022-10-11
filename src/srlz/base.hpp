@@ -1,25 +1,22 @@
 /**
- * @file serializable_base.hpp
- * @author Ilya Shishkin (cortl@yandex.ru)
  * @brief project serializable
- * @version 0.1
- * @date 2022-09-13
+ * @author Ilya Shishkin (cortl@yandex.ru)
  * @license GPL v3.0
  * @copyright Copyright (c) 2022
  */
 
-#ifndef SRLZ_SERIALIZABLE_BASE_HPP
-#define SRLZ_SERIALIZABLE_BASE_HPP
+#ifndef SRLZ_BASE_HPP
+#define SRLZ_BASE_HPP
 
 #include <type_traits>
 
 namespace srlz
 {
 
-class serializable_base
+class base
 {
 public:
-    virtual ~serializable_base() = default;
+    virtual ~base() = default;
 
     virtual bool serialize(
         char* const buffer,
@@ -71,4 +68,4 @@ protected:
 
 } // namespace srlz
 
-#endif // SRLZ_SERIALIZABLE_BASE_HPP
+#endif // SRLZ_BASE_HPP

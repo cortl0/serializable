@@ -1,28 +1,25 @@
 /**
- * @file serializable_string.hpp
- * @author Ilya Shishkin (cortl@yandex.ru)
  * @brief project serializable
- * @version 0.1
- * @date 2022-09-13
+ * @author Ilya Shishkin (cortl@yandex.ru)
  * @license GPL v3.0
  * @copyright Copyright (c) 2022
  */
 
-#ifndef SRLZ_SERIALIZABLE_STRING_HPP
-#define SRLZ_SERIALIZABLE_STRING_HPP
+#ifndef SRLZ_STRING_HPP
+#define SRLZ_STRING_HPP
 
 #include <string>
 
 #include "member.hpp"
-#include "serializable_base.hpp"
+#include "base.hpp"
 
 namespace srlz
 {
 
-class serializable_string : public serializable_base, public std::string
+class string : public base, public std::string
 {
 public:
-    virtual ~serializable_string() = default;
+    virtual ~string() = default;
 
     void set(std::string value)
     {
@@ -68,4 +65,4 @@ public:
 
 } // namespace srlz
 
-#endif // SRLZ_SERIALIZABLE_STRING_HPP
+#endif // SRLZ_STRING_HPP

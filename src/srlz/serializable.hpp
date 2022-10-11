@@ -1,9 +1,6 @@
 /**
- * @file serializable.hpp
- * @author Ilya Shishkin (cortl@yandex.ru)
  * @brief project serializable
- * @version 0.1
- * @date 2022-09-11
+ * @author Ilya Shishkin (cortl@yandex.ru)
  * @license GPL v3.0
  * @copyright Copyright (c) 2022
  */
@@ -17,12 +14,12 @@
 
 #include "member.hpp"
 #include "memory.h"
-#include "serializable_base.hpp"
+#include "base.hpp"
 
 namespace srlz
 {
 
-class serializable : public serializable_base
+class serializable : public base
 {
 public:
     using member_vector_type = const std::vector<void*>;

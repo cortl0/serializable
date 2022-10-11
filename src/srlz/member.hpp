@@ -1,15 +1,14 @@
 /**
- * @file member.hpp
- * @author Ilya Shishkin (cortl@yandex.ru)
  * @brief project serializable
- * @version 0.1
- * @date 2022-09-13
+ * @author Ilya Shishkin (cortl@yandex.ru)
  * @license GPL v3.0
  * @copyright Copyright (c) 2022
  */
 
 #ifndef SRLZ_MEMBER_HPP
 #define SRLZ_MEMBER_HPP
+
+#include <memory>
 
 #include "member_type.h"
 

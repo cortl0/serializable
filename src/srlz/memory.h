@@ -1,15 +1,14 @@
 /**
- * @file serializable.hpp
- * @author Ilya Shishkin (cortl@yandex.ru)
  * @brief project serializable
- * @version 0.1
- * @date 2022-09-11
+ * @author Ilya Shishkin (cortl@yandex.ru)
  * @license GPL v3.0
  * @copyright Copyright (c) 2022
  */
 
-#ifndef SRLZ_MEMORY_HPP
-#define SRLZ_MEMORY_HPP
+#ifndef SRLZ_MEMORY_H
+#define SRLZ_MEMORY_H
+
+#include <type_traits>
 
 namespace srlz
 {
@@ -25,4 +24,4 @@ struct memory
 
 } // namespace srlz
 
-#endif // SRLZ_MEMORY_HPP
+#endif // SRLZ_MEMORY_H

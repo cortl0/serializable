@@ -1,30 +1,27 @@
 /**
- * @file serializable.hpp
- * @author Ilya Shishkin (cortl@yandex.ru)
  * @brief project serializable
- * @version 0.1
- * @date 2022-10-02
+ * @author Ilya Shishkin (cortl@yandex.ru)
  * @license GPL v3.0
  * @copyright Copyright (c) 2022
  */
 
-#ifndef SRLZ_SERIALIZABLE_VECTOR_HPP
-#define SRLZ_SERIALIZABLE_VECTOR_HPP
+#ifndef SRLZ_VECTOR_HPP
+#define SRLZ_VECTOR_HPP
 
 #include <memory>
 #include <vector>
 
 #include "member_type.h"
-#include "serializable_base.hpp"
+#include "base.hpp"
 
 namespace srlz
 {
 
 template<typename _Tp/*, typename _Alloc = std::allocator<_Tp> */>
-class serializable_vector final : public serializable_base, public std::vector<std::unique_ptr<_Tp>/*, _Alloc*/>
+class vector final : public base, public std::vector<std::unique_ptr<_Tp>/*, _Alloc*/>
 {
 public:
-    virtual ~serializable_vector() = default;
+    virtual ~vector() = default;
 
     virtual bool serialize(
         char* const buffer,
@@ -73,4 +70,4 @@ public:
 
 } // namespace srlz
 
-#endif // SRLZ_SERIALIZABLE_VECTOR_HPP
+#endif // SRLZ_VECTOR_HPP
