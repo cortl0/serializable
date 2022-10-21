@@ -1,4 +1,4 @@
-# Serializable C++
-# See usage in serializable_test.cpp  
-# Author Ilya Shishkin (cortl@yandex.ru)  
-# License GPL v3.0  
+#### Serialization library in C++
+#### See usage in [./src/unit_tests/](../main/src/unit_tests/)
+#### Author Ilya Shishkin (cortl@yandex.ru)
+#### License GPL v3.0

@@ -14,7 +14,7 @@ void memory_test()
 {
     using namespace srlz;
 
-    constexpr size_t size = size_t(512);
+    constexpr size_t size = 512ULL;
 
     class entity final : public serializable
     {
@@ -30,7 +30,7 @@ void memory_test()
             m.get_unsafe().pointer = new unsigned char[size];
         }
 
-        member<memory, member_type::MEMORY> m;
+        member<memory, member_type::SRLZ> m;
 
         serializable::member_vector_type member_vector =
         {
@@ -38,22 +38,20 @@ void memory_test()
         };
     };
 
-    constexpr size_t length = 1024;
-    char buffer[length];
-    size_t serialize_offset = 0;
-    size_t deserialize_offset = 0;
     entity first;
     entity second;
 
     for (size_t i = 0; i < size; ++i)
         first.m.get_unsafe().pointer[i] = i % size_t(first.m.get_unsafe().pointer);
 
-    size_t expected_size = sizeof(bool) + size;
+    constexpr size_t expected_size = sizeof(bool) + sizeof(size_t) + size;
+    char buffer[expected_size];
+    size_t offset;
 
-    assert(first.serialize(buffer, length, serialize_offset));
-    assert(second.deserialize(buffer, length, deserialize_offset));
-    assert(expected_size == serialize_offset);
-    assert(expected_size == deserialize_offset);
+    assert(first.serialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.deserialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
 
     for (size_t i = 0; i < size; ++i)
         assert(first.m.get().pointer[i] == first.m.get().pointer[i]);

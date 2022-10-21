@@ -50,41 +50,42 @@ void fundamental_types_test()
         };
     };
 
-    constexpr size_t length = 128;
-    char buffer[length];
-    size_t serialize_offset = 0;
-    size_t deserialize_offset = 0;
-    entity first;
-    entity second;
-
-    first.b    .set( true        );
-    first.i8   .set( int8_t(1)   );
-    first.i16  .set( int16_t(2)  );
-    first.i32  .set( 3L          );
-    first.i64  .set( 4LL         );
-    first.ui8  .set( uint8_t(5)  );
-    first.ui16 .set( uint16_t(6) );
-    first.ui32 .set( 7LU         );
-    first.ui64 .set( 8LLU        );
-    first.f    .set( 9.0F        );
-    first.d    .set( 10.0        );
-    first.ld   .set( 11.0DL      );
-
-    constexpr size_t expected_size = 
-        sizeof(bool)    * 12 +
-        sizeof(bool)         +
-        sizeof(int8_t)  *  2 +
-        sizeof(int16_t) *  2 +
-        sizeof(int32_t) *  2 +
-        sizeof(int64_t) *  2 +
-        sizeof(float)        +
-        sizeof(double)       +
+    constexpr size_t expected_size =
+        sizeof(bool) * 12 +
+        sizeof(bool)      +
+        sizeof(int8_t)    +
+        sizeof(int16_t)   +
+        sizeof(int32_t)   +
+        sizeof(int64_t)   +
+        sizeof(uint8_t)   +
+        sizeof(uint16_t)  +
+        sizeof(uint32_t)  +
+        sizeof(uint64_t)  +
+        sizeof(float)     +
+        sizeof(double)    +
         sizeof(long double);
 
-    assert(first.serialize(buffer, length, serialize_offset));
-    assert(second.deserialize(buffer, length, deserialize_offset));
-    assert(expected_size == serialize_offset);
-    assert(expected_size == deserialize_offset);
+    entity first;
+    entity second;
+    first.b    .set( true        );
+    first.i8   .set( int8_t(2)   );
+    first.i16  .set( int16_t(3)  );
+    first.i32  .set( 4L          );
+    first.i64  .set( 5LL         );
+    first.ui8  .set( uint8_t(6)  );
+    first.ui16 .set( uint16_t(7) );
+    first.ui32 .set( 8LU         );
+    first.ui64 .set( 9LLU        );
+    first.f    .set( 10.0F       );
+    first.d    .set( 11.0        );
+    first.ld   .set( 12.0DL      );
+    char buffer[expected_size];
+    size_t offset;
+
+    assert(first.serialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.deserialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
     assert(first.b    .get() == second.b    .get());
     assert(first.i8   .get() == second.i8   .get());
     assert(first.i16  .get() == second.i16  .get());

@@ -19,30 +19,30 @@ void has_value_test()
         virtual ~entity() = default;
         entity() : serializable(member_vector) {}
 
-        member<int8_t, member_type::INT_8> i8;
+        member<int32_t, member_type::INT_32> i;
 
         serializable::member_vector_type member_vector =
         {
-            static_cast<void*>(&i8)
+            static_cast<void*>(&i)
         };
     };
 
     {
         entity obj;
-        assert(obj.i8.has_value());
-        obj.i8.set_has_value(false);
-        assert(!obj.i8.has_value());
-        obj.i8.set_has_value(true);
-        assert(obj.i8.has_value());
+        assert(obj.i.has_value());
+        obj.i.set_has_value(false);
+        assert(!obj.i.has_value());
+        obj.i.set_has_value(true);
+        assert(obj.i.has_value());
     }
 
     {
         entity obj;
-        obj.i8.set_has_value(false);
+        obj.i.set_has_value(false);
         bool success = false;
         try
         {
-            obj.i8.get();
+            obj.i.get();
         }
         catch (...)
         {
@@ -53,11 +53,11 @@ void has_value_test()
 
     {
         entity obj;
-        obj.i8.set_has_value(false);
+        obj.i.set_has_value(false);
         bool success = false;
         try
         {
-            obj.i8.get_unsafe();
+            obj.i.get_unsafe();
         }
         catch (...)
         {
@@ -71,7 +71,7 @@ void has_value_test()
         bool success = true;
         try
         {
-            obj.i8.get();
+            obj.i.get();
         }
         catch (...)
         {
@@ -85,7 +85,7 @@ void has_value_test()
         bool success = true;
         try
         {
-            obj.i8.get_unsafe();
+            obj.i.get_unsafe();
         }
         catch (...)
         {
@@ -95,12 +95,9 @@ void has_value_test()
     }
 
     {
-        constexpr int8_t test_int8_t_value = int8_t(15);
         entity obj;
-        obj.i8.set_has_value(false);
-        obj.i8.set(test_int8_t_value);
-        assert(obj.i8.has_value());
-        assert(obj.i8.get() == test_int8_t_value);
-        assert(obj.i8.get_unsafe() == test_int8_t_value);
+        obj.i.set_has_value(false);
+        obj.i.set(15);
+        assert(obj.i.has_value());
     }
 }

@@ -19,20 +19,18 @@ void nested_custom_entity_test()
     class nested_entity final : public serializable
     {
     public:
-        virtual ~nested_entity()
-        {
-        }
+        virtual ~nested_entity() = default;
 
         nested_entity() : serializable(member_vector) {}
 
-        member<int8_t, member_type::INT_8> i8;
+        member<int32_t, member_type::INT_32> i;
 
         serializable::member_vector_type member_vector =
         {
-            static_cast<void*>(&i8)
+            static_cast<void*>(&i)
         };
 
-        std::unique_ptr<std::vector<uint8_t>> custom_vector { new std::vector<uint8_t>() };
+        std::unique_ptr<std::vector<uint32_t>> custom_vector { new std::vector<uint32_t>() };
 
         virtual bool serialize(
             char* const buffer,
@@ -67,7 +65,7 @@ void nested_custom_entity_test()
 
             for (size_t i = 0; i < length; ++i)
             {
-                uint8_t value;
+                uint32_t value;
 
                 if (!read(static_cast<void* const>(&value), sizeof(value), buffer, buffer_size, buffer_offset))
                     return false;
@@ -93,25 +91,29 @@ void nested_custom_entity_test()
         };
     };
 
-    constexpr int8_t test_int8_t_value = int8_t(15);
-    constexpr size_t length = 1024;
-    char buffer[length];
-    size_t serialize_offset = 0;
-    size_t deserialize_offset = 0;
     entity first;
     entity second;
-    first.nested.get_unsafe().custom_vector->push_back(test_int8_t_value);
-    first.nested.get_unsafe().custom_vector->push_back(test_int8_t_value + 5);
-    first.nested.get_unsafe().i8.get_unsafe() = test_int8_t_value - 5;
-    size_t expected_size = sizeof(bool) + sizeof(size_t) + sizeof(int8_t) * 2 + sizeof(bool) + sizeof(int8_t);
+    constexpr int32_t test_value = 15;
+    first.nested.get_unsafe().i.get_unsafe() = test_value - 5;
+    first.nested.get_unsafe().custom_vector->push_back(test_value);
+    first.nested.get_unsafe().custom_vector->push_back(test_value + 5);
 
-    assert(first.serialize(buffer, length, serialize_offset));
-    assert(second.deserialize(buffer, length, deserialize_offset));
-    assert(expected_size == serialize_offset);
-    assert(expected_size == deserialize_offset);
-    assert((*second.nested.get().custom_vector)[0] == test_int8_t_value);
-    assert((*second.nested.get().custom_vector)[1] == test_int8_t_value + 5);
-    assert(second.nested.get().i8.get() == test_int8_t_value - 5);
+    constexpr size_t expected_size =
+        sizeof(bool) +
+        sizeof(size_t) +
+        sizeof(first.nested.get().i.get()) * 2 +
+        sizeof(bool) + sizeof(*first.nested.get().custom_vector->begin());
+
+    char buffer[expected_size];
+    size_t offset;
+
+    assert(first.serialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.deserialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.nested.get().i.get() == test_value - 5);
+    assert((*second.nested.get().custom_vector)[0] == test_value);
+    assert((*second.nested.get().custom_vector)[1] == test_value + 5);
 
     //debug_helper(buffer, serialize_offset);
 }

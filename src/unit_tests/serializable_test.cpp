@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "has_value_test.hpp"
+#include "length_buffer_test.hpp"
 #include "simple_test.hpp"
 #include "selective_test.hpp"
 #include "fundamental_types_test.hpp"
@@ -25,6 +26,7 @@ int main(int argc, char* argv[])
     const std::initializer_list<std::pair<void (*)(), std::string_view>> tests = 
     {
         {has_value_test, "has_value_test"sv},
+        {length_buffer_test, "length_buffer_test"sv},
         {simple_test, "simple_test"sv},
         {selective_test, "selective_test"sv},
         {fundamental_types_test, "fundamental_types_test"sv},

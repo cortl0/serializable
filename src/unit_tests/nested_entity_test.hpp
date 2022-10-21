@@ -20,11 +20,11 @@ void nested_entity_test()
         virtual ~nested_entity() = default;
         nested_entity() : serializable(member_vector) {}
 
-        member<int8_t, member_type::INT_8> i8;
+        member<int32_t, member_type::INT_32> i;
 
         serializable::member_vector_type member_vector =
         {
-            static_cast<void*>(&i8)
+            static_cast<void*>(&i)
         };
     };
 
@@ -42,23 +42,25 @@ void nested_entity_test()
         };
     };
 
-    constexpr int8_t test_int8_t_value = int8_t(15);
-    constexpr size_t length = 1024;
-    char buffer[length];
-    size_t serialize_offset = 0;
-    size_t deserialize_offset = 0;
+    constexpr int32_t test_value = 15;
     entity first;
     entity second;
-    first.nested.get_unsafe().i8.set(test_int8_t_value);
-    const size_t expected_size = sizeof(bool) + sizeof(bool) + sizeof(int8_t);
+    first.nested.get_unsafe().i.set(test_value);
 
-    assert(first.nested.get().i8.get() == test_int8_t_value);
-    assert(first.serialize(buffer, length, serialize_offset));
-    assert(second.deserialize(buffer, length, deserialize_offset));
-    assert(expected_size == serialize_offset);
-    assert(expected_size == deserialize_offset);
-    assert(test_int8_t_value == first.nested.get().i8.get());
-    assert(test_int8_t_value == second.nested.get().i8.get());
+    constexpr size_t expected_size =
+        sizeof(bool) +
+        sizeof(bool) +
+        sizeof(first.nested.get().i.get());
+
+    char buffer[expected_size];
+    size_t offset;
+
+    assert(first.serialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.deserialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(test_value == first.nested.get().i.get());
+    assert(test_value == second.nested.get().i.get());
 
     //debug_helper(buffer, serialize_offset);
 }

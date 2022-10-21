@@ -29,8 +29,7 @@ enum class member_type : uint8_t
     FLOAT,
     DOUBLE,
     LONG_DOUBLE,
-    
-    MEMORY,
+
     SRLZ,
 };
 

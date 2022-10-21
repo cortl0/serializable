@@ -67,16 +67,6 @@ public:
             case member_type::DOUBLE      : { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( double      , member_type::DOUBLE      ) break; }
             case member_type::LONG_DOUBLE : { SRLZ_SERIALIZE_FUNDAMENTAL_TYPE( long double , member_type::LONG_DOUBLE ) break; }
 
-            case member_type::MEMORY:
-            {
-                auto& mem = *static_cast<member<memory, member_type::MEMORY>*>(memb);
-
-                if (!write(static_cast<const void* const>(mem.value_->pointer), mem.value_->size, buffer, buffer_size, buffer_offset))
-                    return false;
-
-                break;
-            }
-
             case member_type::SRLZ:
             {
                 auto& mem = *static_cast<member<serializable, member_type::SRLZ>*>(memb);
@@ -133,16 +123,6 @@ public:
             case member_type::FLOAT       : { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( float       , member_type::FLOAT       ) break; }
             case member_type::DOUBLE      : { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( double      , member_type::DOUBLE      ) break; }
             case member_type::LONG_DOUBLE : { SRLZ_DESERIALIZE_FUNDAMENTAL_TYPE( long double , member_type::LONG_DOUBLE ) break; }
-
-            case member_type::MEMORY:
-            {
-                auto& mem = *static_cast<member<memory, member_type::MEMORY>*>(memb);
-
-                if (!read(static_cast<void* const>(mem.value_->pointer), mem.value_->size, buffer, buffer_size, buffer_offset))
-                    return false;
-
-                break;
-            }
 
             case member_type::SRLZ:
             {

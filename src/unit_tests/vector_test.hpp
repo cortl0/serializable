@@ -20,11 +20,11 @@ void vector_test()
         virtual ~item_entity() = default;
         item_entity() : serializable(member_vector) {}
 
-        member<int8_t, member_type::INT_8> i8;
+        member<int32_t, member_type::INT_32> i;
 
         serializable::member_vector_type member_vector =
         {
-            static_cast<void*>(&i8)
+            static_cast<void*>(&i)
         };
     };
 
@@ -42,31 +42,33 @@ void vector_test()
         };
     };
 
-    constexpr int8_t test_int8_t_value = int8_t(15);
-    constexpr size_t length = 512;
-    char buffer[length];
-    size_t serialize_shift = 0;
-    size_t deserialize_shift = 0;
+    constexpr int32_t test_value = 15;
     entity first;
     entity second;
-
     first.v.get_unsafe().push_back(std::make_unique<item_entity>());
-    first.v.get().back().get()->i8.set(88);
+    first.v.get().back().get()->i.set(test_value);
     first.v.get_unsafe().push_back(std::make_unique<item_entity>());
-    first.v.get().back().get()->i8.set(89);
+    first.v.get().back().get()->i.set(test_value + 1);
+    const size_t vector_size = first.v.get().size();
 
-    assert(first.serialize(buffer, length, serialize_shift));
-    assert(second.deserialize(buffer, length, deserialize_shift));
+    const size_t expected_size =
+        sizeof(bool) +
+        sizeof(size_t) +
+        (sizeof(bool) + sizeof(first.v.get().begin()->get()->i.get())) * vector_size;
 
-    size_t expected_size = sizeof(bool) + sizeof(size_t) + (sizeof(bool) + sizeof(int8_t)) * 2;
-    assert(expected_size == serialize_shift);
-    assert(expected_size == deserialize_shift);
-    assert(2 == first.v.get().size());
-    assert(2 == second.v.get().size());
-    assert(first.v.get().begin()->get()->i8.get() == 88);
-    assert(first.v.get().back().get()->i8.get() == 89);
-    assert(second.v.get().begin()->get()->i8.get() == 88);
-    assert(second.v.get().back().get()->i8.get() == 89);
+    char buffer[expected_size];
+    size_t offset;
 
-    //debug_helper(buffer, serialize_shift);
+    assert(first.serialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.deserialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(vector_size == first.v.get().size());
+    assert(vector_size == second.v.get().size());
+    assert(first.v.get().begin()->get()->i.get() == test_value);
+    assert(first.v.get().back().get()->i.get() == test_value + 1);
+    assert(second.v.get().begin()->get()->i.get() == test_value);
+    assert(second.v.get().back().get()->i.get() == test_value + 1);
+
+    //debug_helper(buffer, serialize_offset);
 }

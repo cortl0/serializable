@@ -26,16 +26,16 @@ public:
     virtual bool serialize(
         char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const override
     {
         const size_t length = this->size();
 
-        if (!write(static_cast<const void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_shift))
+        if (!write(static_cast<const void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
             return false;
 
         for (auto& item : *((std::vector<std::unique_ptr<_Tp>>*)this))
-            if(!item->serialize(buffer, buffer_size, buffer_shift))
+            if(!item->serialize(buffer, buffer_size, buffer_offset))
                 return false;
 
         return true;
@@ -44,12 +44,12 @@ public:
     virtual bool deserialize(
         const char* const buffer,
         const size_t buffer_size,
-        size_t& buffer_shift
+        size_t& buffer_offset
         ) const override
     {
         size_t length;
 
-        if (!read(static_cast<void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_shift))
+        if (!read(static_cast<void* const>(&length), sizeof(size_t), buffer, buffer_size, buffer_offset))
             return false;
 
         ((std::vector<std::unique_ptr<_Tp>>*)this)->clear();
@@ -58,7 +58,7 @@ public:
         {
             _Tp* item = new _Tp();
 
-            if (!item->deserialize(buffer, buffer_size, buffer_shift))
+            if (!item->deserialize(buffer, buffer_size, buffer_offset))
                 return false;
 
             ((std::vector<std::unique_ptr<_Tp>>*)this)->push_back(std::unique_ptr<_Tp>(item));

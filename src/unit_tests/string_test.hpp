@@ -16,6 +16,18 @@ void string_test()
 
     using namespace srlz;
 
+    const std::string std_string{"text"s};
+
+    {
+        string first;
+        string second;
+        first.set(std_string);
+        second.set(std_string);
+        assert(std_string == first);
+        assert(std_string == second);
+        assert(first == second);
+    }
+
     class entity final : public serializable
     {
     public:
@@ -30,27 +42,38 @@ void string_test()
         };
     };
 
-    constexpr size_t length = 128;
-    char buffer[length];
-    size_t serialize_offset = 0;
-    size_t deserialize_offset = 0;
-    entity first;
-    entity second;
-    string test_str_value;
-    //!!
-    test_str_value.set("text"s);
-    first.str.set(test_str_value);
-    //!!
-    first.str.get_unsafe().set("text"s);
-    const size_t expected_size = sizeof(bool) + sizeof(size_t) + test_str_value.length();
+    {
+        string srlz_string;
+        srlz_string.set(std_string);
+        entity first;
+        entity second;
+        first.str.get_unsafe().set(std_string);
+        second.str.set(srlz_string);
 
-    assert(first.serialize(buffer, length, serialize_offset));
-    assert(second.deserialize(buffer, length, deserialize_offset));
-    assert(expected_size == serialize_offset);
-    assert(expected_size == deserialize_offset);
-    assert(first.str.get() == test_str_value);
-    assert(first.str.get() == second.str.get());
-    assert(second.str.get() == "text"s);
+        assert(std_string == first.str.get());
+        assert(std_string == second.str.get());
+        assert(srlz_string == first.str.get());
+        assert(srlz_string == second.str.get());
+    }
 
-    //debug_helper(buffer, serialize_offset);
+    {
+        string srlz_string;
+        srlz_string.set(std_string);
+        entity first;
+        entity second;
+        first.str.set(srlz_string);
+        const size_t expected_size = sizeof(bool) + sizeof(size_t) + srlz_string.length();
+        char buffer[expected_size];
+        size_t offset;
+
+        assert(first.serialize(buffer, expected_size, offset = 0));
+        assert(expected_size == offset);
+        assert(second.deserialize(buffer, expected_size, offset = 0));
+        assert(expected_size == offset);
+        assert(first.str.get() == srlz_string);
+        assert(first.str.get() == second.str.get());
+        assert(second.str.get() == std_string);
+
+        //debug_helper(buffer, serialize_offset);
+    }
 }

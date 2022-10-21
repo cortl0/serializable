@@ -29,7 +29,7 @@ void custom_entity_test()
 
         serializable::member_vector_type member_vector;
 
-        std::unique_ptr<std::vector<uint8_t>> custom_vector { new std::vector<uint8_t>() };
+        std::unique_ptr<std::vector<int32_t>> custom_vector { new std::vector<int32_t>() };
 
         virtual bool serialize(
             char* const buffer,
@@ -64,7 +64,7 @@ void custom_entity_test()
 
             for (size_t i = 0; i < length; ++i)
             {
-                uint8_t value;
+                int32_t value;
 
                 if (!read(static_cast<void* const>(&value), sizeof(value), buffer, buffer_size, buffer_offset))
                     return false;
@@ -77,23 +77,21 @@ void custom_entity_test()
 
     };
 
-    constexpr int8_t test_int8_t_value = int8_t(15);
-    constexpr size_t length = 1024;
-    char buffer[length];
-    size_t serialize_offset = 0;
-    size_t deserialize_offset = 0;
     entity first;
     entity second;
-    first.custom_vector->push_back(test_int8_t_value);
-    first.custom_vector->push_back(test_int8_t_value + 5);
-    size_t expected_size = sizeof(size_t) + sizeof(int8_t) * 2;
+    constexpr int8_t test_value = int8_t(15);
+    first.custom_vector->push_back(test_value);
+    first.custom_vector->push_back(test_value + 5);
+    constexpr size_t expected_size = sizeof(size_t) + sizeof(int32_t) * 2;
+    char buffer[expected_size];
+    size_t offset;
 
-    assert(first.serialize(buffer, length, serialize_offset));
-    assert(second.deserialize(buffer, length, deserialize_offset));
-    assert(expected_size == serialize_offset);
-    assert(expected_size == deserialize_offset);
-    assert((*second.custom_vector)[0] == test_int8_t_value);
-    assert((*second.custom_vector)[1] == test_int8_t_value + 5);
+    assert(first.serialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.deserialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert((*second.custom_vector)[0] == test_value);
+    assert((*second.custom_vector)[1] == test_value + 5);
 
     //debug_helper(buffer, serialize_offset);
 }

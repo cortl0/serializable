@@ -20,30 +20,28 @@ void simple_test()
         virtual ~entity() = default;
         entity() : serializable(member_vector) {}
 
-        member<int8_t, member_type::INT_8> i8;
+        member<int32_t, member_type::INT_32> i;
 
         serializable::member_vector_type member_vector =
         {
-            static_cast<void*>(&i8)
+            static_cast<void*>(&i)
         };
     };
 
-    constexpr int8_t test_int8_t_value = int8_t(15);
-    constexpr size_t length = 16;
-    char buffer[length];
-    size_t serialize_offset = 0;
-    size_t deserialize_offset = 0;
+    constexpr int32_t test_value = 15;
     entity first;
     entity second;
-    first.i8.set(test_int8_t_value);
-    constexpr size_t expected_size = sizeof(bool) + sizeof(int8_t);
+    first.i.set(test_value);
+    constexpr size_t expected_size = sizeof(bool) + sizeof(first.i.get());
+    char buffer[expected_size];
+    size_t offset;
 
-    assert(first.serialize(buffer, length, serialize_offset));
-    assert(second.deserialize(buffer, length, deserialize_offset));
-    assert(expected_size == serialize_offset);
-    assert(expected_size == deserialize_offset);
-    assert(test_int8_t_value == first.i8.get());
-    assert(test_int8_t_value == second.i8.get());
+    assert(first.serialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(second.deserialize(buffer, expected_size, offset = 0));
+    assert(expected_size == offset);
+    assert(test_value == first.i.get());
+    assert(test_value == second.i.get());
 
     //debug_helper(buffer, serialize_offset);
 }
