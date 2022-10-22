@@ -7,7 +7,6 @@
 
 #include <cassert>
 
-#include "debug_helper.hpp"
 #include "srlz/serializable.hpp"
 
 void simple_test()
@@ -37,11 +36,6 @@ void simple_test()
     size_t offset;
 
     assert(first.serialize(buffer, expected_size, offset = 0));
-    assert(expected_size == offset);
     assert(second.deserialize(buffer, expected_size, offset = 0));
-    assert(expected_size == offset);
-    assert(test_value == first.i.get());
     assert(test_value == second.i.get());
-
-    //debug_helper(buffer, serialize_offset);
 }

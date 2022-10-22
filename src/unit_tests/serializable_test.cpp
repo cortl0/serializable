@@ -18,6 +18,7 @@
 #include "custom_entity_test.hpp"
 #include "nested_custom_entity_test.hpp"
 #include "vector_test.hpp"
+#include "copy_assignment_operator_test.hpp"
 
 using namespace std::string_view_literals;
 
@@ -36,6 +37,7 @@ int main(int argc, char* argv[])
         {custom_entity_test, "custom_entity_test"sv},
         {nested_entity_test, "nested_entity_test"sv},
         {nested_custom_entity_test, "nested_custom_entity_test"sv},
+        {copy_assignment_operator_test, "copy_assignment_operator_test"sv},
     };
 
     for (auto& [test, name] : tests)
